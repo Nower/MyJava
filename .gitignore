@@ -1,0 +1,16 @@
+*.class                                                                                                                     *.sw[ijklmnop]
+*.orig
+*~
+*.pyc
+*.bin
+*.config
+.DS_Store
+._*
+.project
+.buildpath
+.settings
+.reviewboardrc
+.idea
+*.iml
+/out
+

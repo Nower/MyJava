@@ -5,4 +5,7 @@ package com.wjz.JMX;
  */
 public class main {
 
+    /**
+     * ³É¶¼ÊÐbainma
+     */
 }
