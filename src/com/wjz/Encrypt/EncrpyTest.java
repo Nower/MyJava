@@ -1,4 +1,4 @@
-package com.wjz.Encrpy;
+package com.wjz.Encrypt;
 
 import java.io.UnsupportedEncodingException;
 

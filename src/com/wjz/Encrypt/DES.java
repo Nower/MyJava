@@ -1,4 +1,4 @@
-package com.wjz.Encrpy;
+package com.wjz.Encrypt;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -68,7 +68,8 @@ public class DES {
             SecretKey secretKey = keyFactory.generateSecret(dks);
 
             // using DES in ECB mode
-            Cipher cipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
+//            Cipher cipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
+            Cipher cipher = Cipher.getInstance("DES/ECB/NoPadding");
 
             // 用密匙初始化Cipher对象
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, sr);
@@ -148,9 +149,9 @@ public class DES {
             SecretKey secretKey = keyFactory.generateSecret(dks);
 
             // Cipher对象实际完成加密操作
-            Cipher cipher = Cipher.getInstance("DES/CBC/PKCS5Padding");
+            //Cipher cipher = Cipher.getInstance("DES/CBC/PKCS5Padding");
             // 若采用NoPadding模式，data长度必须是8的倍数
-            // Cipher cipher = Cipher.getInstance("DES/CBC/NoPadding");
+             Cipher cipher = Cipher.getInstance("DES/CBC/NoPadding");
 
             // 用密匙初始化Cipher对象
             IvParameterSpec param = new IvParameterSpec(iv);
@@ -224,30 +225,42 @@ public class DES {
         return outString;
     }
 
+    private static int parse(char c) {
+        if (c >= 'a') return (c - 'a' + 10) & 0x0f;
+        if (c >= 'A') return (c - 'A' + 10) & 0x0f;
+        return (c - '0') & 0x0f;
+    }
+
+    public static byte[] funHexString2Bytes(String hexstr) {
+        byte[] b = new byte[hexstr.length() / 2];
+        int j = 0;
+        for (int i = 0; i < b.length; i++) {
+            char c0 = hexstr.charAt(j++);
+            char c1 = hexstr.charAt(j++);
+            b[i] = (byte) ((parse(c0) << 4) | parse(c1));
+        }
+        return b;
+    }
+
     public static void main(String[] args) {
         try {
-            byte[] key = "D53C05F3F3A74750".getBytes();
+//            byte[] key = funHexString2Bytes("D53C05F3F3A74750");
+            byte[] key = funHexString2Bytes("D53C05F3F3A74750");
             byte[] iv = "00000000".getBytes();
-//            byte[] data1 = DES.encrypt("12345678".getBytes(), key);
-//            System.out.print("EBC mode:");
-//            System.out.println(new String(DES.decrypt(data, key)));
-//            System.out.print("CBC mode:");
-            byte[] data2 = DES.CBCEncrypt("12345678".getBytes(), key, iv);
-//            System.out.println(new String(DES.CBCDecrypt(data, key, iv)));
+//            byte[] data2 = DES.encrypt("12345678".getBytes(), key);
+//            byte[] data2 = DES.CBCEncrypt("12000000".getBytes(), key, iv);
+            byte[] data2 = DES.CBCEncrypt("00000000".getBytes(), key, iv);
 
-//            System.out.println(new String(data));
-//            for(int i=0; i<data1.length; i++){
-//                System.out.print(data1[i] + ' ');
-//            }
-//            System.out.println();
-//            System.out.println(funByteToHexString(data1));
-//            System.out.println(new String(data1));
 
             for(int i=0; i<data2.length; i++){
-                System.out.print(data2[i] + ' ');
+                System.out.print(" " + data2[i]);
             }
             System.out.println();
             System.out.println(funByteToHexString(data2));
+
+
+            System.out.println();
+            System.out.println(funByteToHexString("00000000".getBytes()));
 
         } catch (Exception e) {
             e.printStackTrace();

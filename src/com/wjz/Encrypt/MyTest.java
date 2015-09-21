@@ -1,4 +1,4 @@
-package com.wjz.Encrpy;
+package com.wjz.Encrypt;
 
 /**
  * Created by wujiazhi on 15/8/19.

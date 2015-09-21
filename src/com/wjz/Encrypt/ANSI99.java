@@ -1,4 +1,4 @@
-package com.wjz.Encrpy;
+package com.wjz.Encrypt;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -12,7 +12,7 @@ import java.security.SecureRandom;
 public class ANSI99 {
     private static char[] CHARARRAY= {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
-    private static byte[] funStringToBcd(char[] data){
+    public static byte[] funStringToBcd(char[] data){
         int len = data.length;
         if(len % 2 != 0 || len == 0){
             throw new RuntimeException("数据长度错误");
@@ -27,7 +27,7 @@ public class ANSI99 {
         return outData;
     }
 
-    private static String funByteToHexString(byte[] data){
+    public static String funByteToHexString(byte[] data){
 
         int len = data.length;
         char[] outChar = new char[len<<1];
@@ -40,17 +40,15 @@ public class ANSI99 {
         return outString;
     }
 
-    public static void printBytes(byte[] bytes){
-        for(int i=0; i<bytes.length; i++){
-            System.out.println(bytes[i]);
-        }
+    public static byte[] ecbEncryptString(String input, byte[] key, byte[] iv) {
+        //转换成字节数组
+        byte[] inputBytes = input.getBytes();
+        return ecbEncryptByte(inputBytes, key, iv);
     }
 
-    public static byte[] ecbEncrypt(String input, String key) {
+    public static byte[] ecbEncryptByte(byte[] inputBytes, byte[] key, byte[] iv) {
         byte[] xor = new byte[8];
         try {
-            //转换成字节数组
-            byte[] inputBytes = input.getBytes();
             int len = inputBytes.length;
             //D1....DN，groups就是N
             int groups = (len + 7) / 8;
@@ -69,8 +67,16 @@ public class ANSI99 {
                 for(int j = start; xorPos<8; xorPos++, j++){
                     xor[xorPos] ^= inputBytes[j];
                 }
-                //异或后再进行每一组数据的DES加密
-                xor = desEncrypt(xor, key.getBytes());
+                //异或后再进行每一组数据的DES加密,1和3的效果是一样的
+
+                //默认的DES密钥只能为8个字节，如果超过8个字节就被会截断；所以招行信用卡的密钥肯定是16进制形式的字符，16个这样的字符，其实是8字节的密钥；
+                //但经过加密网站和代码验证，都和招行加密机的结果不相同；
+//                xor = desEncrypt(xor, key);//1
+                xor = DES.CBCEncrypt(xor, key, iv);//2
+//                xor = DES.encrypt(xor, key);//3
+                byte[] nXor = new byte[8];
+                System.arraycopy(xor, xor.length-8, nXor, 0, 8);
+                xor = nXor;
             }
 
             return xor;
@@ -103,8 +109,18 @@ public class ANSI99 {
     }
 
     public static void main(String[] args){
-//        System.out.println("Final :" + funByteToHexString(ecbEncrypt("12345678", "D53C05F3F3A74750")));
-        System.out.println("Final :" + new String(ecbEncrypt("F4F3E7B3566F6622098750B491EA8D5C6", "9BED98891580C3B2")));
+        //
+        String mac = "0200 166225768738823168 00X000 000000001980 0824143824 7399 00 0897132900 0897132900 SH407100 308999873990426";
+//        String mac1 = "30313130a23a40818ac1843000000000020000013331303030303033303831353236303834363630313031353236303830333038303132333532313139323038303031363234303030383534313132303733313532363038343636303130303030303030303030323330383239303035343131323031333036384b4646455a534a3230303031323320202020202020202020202020202020202020202020202020202020202031303030303030303030303030303030347465737474742331353630343030303136313536443132333435363738393032323030313631353644313233343536373839303232303233424932303039303930303030787878787878787878782330313430303030303030303636303030303038353431313230373300000000000000";
+        String mac1 = "30313130a23a40818ac184300000000002000001333130303030000000000000";
+//        String mac = "MDIwMCAxNjYyMjU3Njg3Mzg4MjMxNjggMDBYMDAwIDAwMDAwMDAwMTk4MCAwODI0MTQzODI0IDczOTkgMDAgMDg5NzEzMjkwMCAwODk3MTMyOTAwIFNINDA3MTAwIDMwODk5OTg3Mzk5MDQyNg==";
+        byte[] key = DES.funHexString2Bytes("D53C05F3F3A74750");
+        byte[] key1 = DES.funHexString2Bytes("159D7CA749D5CE97");
+        byte[] iv = DES.funHexString2Bytes("0000000000000000");
+        System.out.println(mac1.length());
+        System.out.println("Final :" + funByteToHexString(ecbEncryptString(mac, key, iv)));
+        System.out.println("Final :" + funByteToHexString(ecbEncryptByte(DES.funHexString2Bytes(mac1), key1, iv)));
+//        System.out.println("Final :" + funByteToHexString(ecbEncrypt("testingSimulateEncryptMachineTxt", "D53C05F3F3A74750")));
 
     }
 
